@@ -66,7 +66,7 @@ try:
 	vehicle_data["TrackingDeviceID"] = vi.tracking_device_id
 	vehicle_data["timestamp"] = 1000 * time.time()
 	vehicle_data["readings"] = {}
-	vehicle_data["readings"]["Speed"] = gps_data.fix.speed
+	vehicle_data["readings"]["Speed"] = gps_data.fix.speed * 3.6	#mps to kmph
 	vehicle_data["readings"]["Acc_X"] = sensor_readings[10]
 	vehicle_data["readings"]["Acc_Y"] = sensor_readings[11]
 	vehicle_data["readings"]["Acc_Z"] = sensor_readings[12]
