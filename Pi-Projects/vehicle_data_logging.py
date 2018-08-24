@@ -62,20 +62,20 @@ try:
 	vehicle_data["TrackingDeviceID"] = vi.tracking_device_id
 	vehicle_data["timestamp"] = 1000 * time.time()
 	vehicle_data["readings"] = {}
-	vehicle_data["readings"]["Speed"] = gps_data.fix.speed
+	vehicle_data["readings"]["Speed"] = gps_data.fix.speed * 3.6	#mps to kmph
 	vehicle_data["readings"]["Acc_X"] = sensor_readings[10]
 	vehicle_data["readings"]["Acc_Y"] = sensor_readings[11]
 	vehicle_data["readings"]["Acc_Z"] = sensor_readings[12]
 	vehicle_data["GPS"] = {}
 	vehicle_data["GPS"]["coordinates"] = [gps_data.fix.longitude,gps_data.fix.latitude]
 #	vehicle_data["GPS"]["SignalStrength"] = gps_data.satellites
-#        vehicle_data["GPS"]["Heading"] = gps_data.fix.heading
+#   vehicle_data["GPS"]["Heading"] = gps_data.fix.heading
 
 #	print(json.dumps(vehicle_data))
 
 	status_code = send_data_to_vi(vehicle_data)
 #	print('Post Response', status_code)
-        print('Data Posted at ', time.time())
+	print('Data Posted at ', time.time())
 
 	time.sleep(2)
 
