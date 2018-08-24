@@ -69,13 +69,13 @@ try:
 	vehicle_data["GPS"] = {}
 	vehicle_data["GPS"]["coordinates"] = [gps_data.fix.longitude,gps_data.fix.latitude]
 #	vehicle_data["GPS"]["SignalStrength"] = gps_data.satellites
-#        vehicle_data["GPS"]["Heading"] = gps_data.fix.heading
+#   vehicle_data["GPS"]["Heading"] = gps_data.fix.heading
 
 #	print(json.dumps(vehicle_data))
 
 	status_code = send_data_to_vi(vehicle_data)
 #	print('Post Response', status_code)
-        print('Data Posted at ', time.time())
+	print('Data Posted at ', time.time())
 
 	time.sleep(2)
 
