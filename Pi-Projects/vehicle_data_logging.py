@@ -34,16 +34,16 @@ def get_fuel_estimation(speed) :
 	else : return 1
 
 def send_data_to_vi(post_data) :
-
-	try:
-		url = vi.api_endpoint_url
-		token = vi.oauth_token
-		headers = {'Content-type': 'application/json', 'Authorization': 'Bearer ' + token}
-		r = requests.post(url, data=json.dumps(post_data), headers=headers)
-		return r.status_code
-	except requests.exceptions.RequestException as e:
-#		Ignore if we are unable to post to web service
-		return -1;
+    
+    try:
+        url = vi.api_endpoint_url
+        token = vi.oauth_token
+        headers = {'Content-type': 'application/json', 'Authorization': 'Bearer ' + token}
+        r = requests.post(url, data=json.dumps(post_data), headers=headers)
+        return r.status_code
+    
+    except:
+        return -1;
 	
 
 ## Main Program ##
@@ -58,7 +58,7 @@ print(gpsp.get_polling_status())
 i = 0
 while i<5:
     sensor_readings = sensor_data.get_sense_data()
-    gps_data = gpsp.get_current_value()
+    gpsp.get_current_value()
     i = i+1
 
 print("loop start")
@@ -67,33 +67,35 @@ start_time = time.time()
 now = time.time()
 
 try:
+    
+    while now < start_time + time_to_log:
+            
+        sensor_readings = sensor_data.get_sense_data()
+        sensor_readings.append(comment)
+        gps_data = gpsp.get_current_value()
 
-	sensor_readings = sensor_data.get_sense_data()
-	sensor_readings.append(comment)
-	gps_data = gpsp.get_current_value()
-	
-	vehicle_data = {}
-	vehicle_data["format"] = vi.tracking_device_id
-	vehicle_data["TrackingDeviceID"] = vi.tracking_device_id
-	vehicle_data["timestamp"] = 1000 * time.time()
-	vehicle_data["readings"] = {}
-	vehicle_data["readings"]["Speed"] = gps_data.fix.speed * 3.6	#mps to kmph
-	vehicle_data["readings"]["OBDII_1_5E"] = get_fuel_estimation(vehicle_data.readings.speed)	#mps to kmph
-	vehicle_data["readings"]["Acc_X"] = sensor_readings[10]
-	vehicle_data["readings"]["Acc_Y"] = sensor_readings[11]
-	vehicle_data["readings"]["Acc_Z"] = sensor_readings[12]
-	vehicle_data["GPS"] = {}
-	vehicle_data["GPS"]["coordinates"] = [gps_data.fix.longitude,gps_data.fix.latitude]
-#	vehicle_data["GPS"]["SignalStrength"] = gps_data.satellites
-#   vehicle_data["GPS"]["Heading"] = gps_data.fix.heading
+        vehicle_data = {}
+        vehicle_data["format"] = vi.tracking_device_id
+        vehicle_data["TrackingDeviceID"] = vi.tracking_device_id
+        vehicle_data["timestamp"] = 1000 * time.time()
+        vehicle_data["readings"] = {}
+        vehicle_data["readings"]["Speed"] = gps_data.fix.speed * 3.6	#mps to kmph
+        vehicle_data["readings"]["FuelConsumption"] = get_fuel_estimation(vehicle_data["readings"]["Speed"])		#mps to kmph
+        vehicle_data["readings"]["Acc_X"] = sensor_readings[10]
+        vehicle_data["readings"]["Acc_Y"] = sensor_readings[11]
+        vehicle_data["readings"]["Acc_Z"] = sensor_readings[12]
+        vehicle_data["GPS"] = {}
+        vehicle_data["GPS"]["coordinates"] = [gps_data.fix.longitude,gps_data.fix.latitude]
+        #vehicle_data["GPS"]["SignalStrength"] = gps_data.satellites
+        #vehicle_data["GPS"]["Heading"] = gps_data.fix.heading
 
-#	print(json.dumps(vehicle_data))
+        #	print(json.dumps(vehicle_data))
 
-	status_code = send_data_to_vi(vehicle_data)
-#	print('Post Response', status_code)
-	print('Data Posted at ', time.time())
+        status_code = send_data_to_vi(vehicle_data)
+        #	print('Post Response', status_code)
+        print('Data Posted at ', time.time(), ' Status Code:' , status_code)
 
-	time.sleep(2)
+        time.sleep(2)
 
 except(KeyboardInterrupt, SystemExit):
 #   Stop Polling now

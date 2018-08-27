@@ -4,7 +4,7 @@
 
 ### Libraries ###
 import MySQLdb
-from config import mysql_config
+from ..config import mysql_config
 
 ### Logging Settings ###
 

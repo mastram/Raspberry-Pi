@@ -4,7 +4,7 @@
 
 ### Libraries ###
 import pyhdb
-from config import hana_config
+from ..config import hana_config
 
 ### Logging Settings ###
 
