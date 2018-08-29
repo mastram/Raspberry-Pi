@@ -26,6 +26,10 @@ def close_connection() :
     mysql_connection.commit()
     mysql_connection.close()
 
+def get_cursor() :
+    global mysql_cursor
+    return mysql_cursor
+
 def write_sensor_data_to_local_db(sensor_data) :
 
     global mysql_cursor

@@ -4,8 +4,6 @@
 from modules.sense_hat  import sensor_data
 from modules.gps_poller import gps_poller
 from modules.config import vi
-from modules.database  import mysql_db
-
 import time
 import argparse
 import json
@@ -23,7 +21,6 @@ args = parser.parse_args()
 
 time_to_log = args.ttl
 comment = args.comment
-fuel_level = 0;
 
 def get_fuel_estimation(speed) :
 	if speed <= 3 : return 1
@@ -46,39 +43,10 @@ def send_data_to_vi(post_data) :
         return r.status_code
     
     except:
-        return -1
+        return -1;
 	
-def get_current_fuel_value() :
-	mysql_cur = mysql_db.get_cursor()
-	query = "SELECT FuelLevel FROM `vehicle_data` WHERE VehicleID = 'KA53MB6956'"
-	mysql_cur.execute(query)
-	row = mysql_cur.fetchone()
-	return row["FuelLevel"]
-
-def update_fuel_value(fuel_value) :
-	mysql_cur = mysql_db.get_cursor()
-	query = "UPDATE `vehicle_data` SET `FuelLevel` = %s WHERE VehicleID = 'KA53MB6956'"
-	mysql_cur.execute(query, fuel_value)
-	mysql_db.commit_data()
-
-
-def send_fuel_data_to_vi() :
-	gps_data = gpsp.get_current_value()
-	vehicle_data = {}
-    vehicle_data["format"] = vi.tracking_device_id
-    vehicle_data["TrackingDeviceID"] = vi.tracking_device_id
-    vehicle_data["timestamp"] = 1000 * time.time()
-    vehicle_data["readings"] = {}
-    vehicle_data["readings"]["FuelLevel"] = fuel_level
-    vehicle_data["GPS"] = {}
-    vehicle_data["GPS"]["coordinates"] = [gps_data.fix.longitude,gps_data.fix.latitude]
-    status_code = send_data_to_vi(vehicle_data)
-    print('Fuel Data Posted at ', time.time(), ' Status Code:' , status_code)
 
 ## Main Program ##
-
-# Open MySQL Connection
-mysql_db.open_connection()
 
 # GPS
 gpsp = gps_poller.GpsPoller()
@@ -95,43 +63,27 @@ while i<5:
 
 print("loop start")
 i=0
-prev_time = time.time()
+start_time = time.time()
+now = time.time()
 
 try:
     
-#	Get the current fuel level
-	fuel_level = get_current_fuel_value()
-
-#	Send Fuel Level at the start
-	send_fuel_data_to_vi()
-
-    while True:
-
-    	i = i + 1
-
-    	if i % 15 == 0: update_fuel_value(fuel_level)
-
+    while now < start_time + time_to_log:
+            
         sensor_readings = sensor_data.get_sense_data()
         sensor_readings.append(comment)
         gps_data = gpsp.get_current_value()
 
-        now = time.time()
-
         vehicle_data = {}
         vehicle_data["format"] = vi.tracking_device_id
         vehicle_data["TrackingDeviceID"] = vi.tracking_device_id
-        vehicle_data["timestamp"] = 1000 * now
+        vehicle_data["timestamp"] = 1000 * time.time()
         vehicle_data["readings"] = {}
         vehicle_data["readings"]["Speed"] = gps_data.fix.speed * 3.6	#mps to kmph
+        vehicle_data["readings"]["FuelConsumption"] = get_fuel_estimation(vehicle_data["readings"]["Speed"])		#mps to kmph
         vehicle_data["readings"]["Acc_X"] = sensor_readings[10]
         vehicle_data["readings"]["Acc_Y"] = sensor_readings[11]
         vehicle_data["readings"]["Acc_Z"] = sensor_readings[12]
-        
-        lph = get_fuel_estimation(vehicle_data["readings"]["Speed"])		#Get Fuel consumption in lph
-        vehicle_data["readings"]["FuelConsumption"] = lph
-        fuel_consumed = lph * (now - prev_time) / 3600
-        fuel_level = fuel_level - fuel_consumed        
-
         vehicle_data["GPS"] = {}
         vehicle_data["GPS"]["coordinates"] = [gps_data.fix.longitude,gps_data.fix.latitude]
         #vehicle_data["GPS"]["SignalStrength"] = gps_data.satellites
@@ -140,18 +92,12 @@ try:
         #	print(json.dumps(vehicle_data))
 
         status_code = send_data_to_vi(vehicle_data)
+        #	print('Post Response', status_code)
         print('Data Posted at ', time.time(), ' Status Code:' , status_code)
 
         time.sleep(2)
 
 except(KeyboardInterrupt, SystemExit):
-
-#	Send Fuel Level in end.
-	send_fuel_data_to_vi()
-
-#	Update Fuel Level
-	update_fuel_value(fuel_level)
-
 #   Stop Polling now
     gpsp.stop_polling()
     print(gpsp.get_polling_status())
