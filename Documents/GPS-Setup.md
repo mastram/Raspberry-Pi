@@ -3,8 +3,7 @@
 
 ## To auto start GPSD Demon
 
-`
-#Default settings for the gpsd init script and the hotplug wrapper.
+`#Default settings for the gpsd init script and the hotplug wrapper.
 
 #Start the gpsd daemon automatically at boot time
 START_DAEMON="true"
@@ -17,8 +16,7 @@ USBAUTO="true"
 DEVICES="/dev/ttyUSB0"
 
 #Other options you want to pass to gpsd
-GPSD_OPTIONS="-F /var/run/gpsd.sock -b -n"
-`
+GPSD_OPTIONS="-F /var/run/gpsd.sock -b -n"`
 
 ## Restart the service
 `sudo /etc/init.d/gpsd restart`
