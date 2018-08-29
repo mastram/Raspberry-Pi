@@ -10,4 +10,6 @@ Things to do when setting up a new Pi
 [SAP HANA Connector for Python](https://github.com/SAP/PyHDB)
 `sudo pip install pyhdb`
 
-4. Set up GPS Libraries
+4. [Set up GPS Libraries](https://github.com/mastram/Raspberry-Pi/blob/master/Documents/GPS-Setup.md)
+
+5. Set up Paho Clients
