@@ -64,18 +64,31 @@ def update_fuel_value(fuel_value) :
 	mysql_db.commit_data()
 
 
+def send_ignition_status_to_vi(igni_status) :
+	gps_data = gpsp.get_current_value()
+	vehicle_data = {}
+	vehicle_data["format"] = vi.tracking_device_id
+	vehicle_data["TrackingDeviceID"] = vi.tracking_device_id
+	vehicle_data["timestamp"] = 1000 * time.time()
+	vehicle_data["readings"] = {}
+	vehicle_data["readings"]["IgnitionStatus"] = igni_status
+	vehicle_data["GPS"] = {}
+	vehicle_data["GPS"]["coordinates"] = [gps_data.fix.longitude,gps_data.fix.latitude]
+	status_code = send_data_to_vi(vehicle_data)
+	print('Ignition Status Posted at ', time.time(), ' Status Code:' , status_code)
+
 def send_fuel_data_to_vi() :
 	gps_data = gpsp.get_current_value()
 	vehicle_data = {}
-    	vehicle_data["format"] = vi.tracking_device_id
-    	vehicle_data["TrackingDeviceID"] = vi.tracking_device_id
+	vehicle_data["format"] = vi.tracking_device_id
+	vehicle_data["TrackingDeviceID"] = vi.tracking_device_id
 	vehicle_data["timestamp"] = 1000 * time.time()
-    	vehicle_data["readings"] = {}
-    	vehicle_data["readings"]["FuelLevel"] = fuel_level
-    	vehicle_data["GPS"] = {}
-    	vehicle_data["GPS"]["coordinates"] = [gps_data.fix.longitude,gps_data.fix.latitude]
-    	status_code = send_data_to_vi(vehicle_data)
-    	print('Fuel Data Posted at ', time.time(), ' Status Code:' , status_code)
+	vehicle_data["readings"] = {}
+	vehicle_data["readings"]["FuelLevel"] = fuel_level
+	vehicle_data["GPS"] = {}
+	vehicle_data["GPS"]["coordinates"] = [gps_data.fix.longitude,gps_data.fix.latitude]
+	status_code = send_data_to_vi(vehicle_data)
+	print('Fuel Data Posted at ', time.time(), ' Status Code:' , status_code)
 
 ## Main Program ##
 
@@ -100,6 +113,9 @@ i=0
 prev_time = time.time()
 
 try:
+
+#	Send Ignition Status - ON
+	send_ignition_status_to_vi("On")
     
 #	Get the current fuel level
 	fuel_level = get_current_fuel_value()
@@ -142,6 +158,10 @@ try:
 	        #	print(json.dumps(vehicle_data))
 
         	status_code = send_data_to_vi(vehicle_data)
+
+        	# Set now time as previous time.
+        	prev_time = time.time()
+        	
 	        print('Data Posted at ', time.time(), ' Status Code:' , status_code)
 
         	time.sleep(2)
@@ -154,6 +174,9 @@ except(KeyboardInterrupt, SystemExit):
 #	Update Fuel Level
 	update_fuel_value(fuel_level)
 	mysql_db.close_connection()
+
+#	Send Ignition Status - ON
+	send_ignition_status_to_vi("Off")
 
 #   Stop Polling now
 	gpsp.stop_polling()
