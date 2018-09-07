@@ -1,0 +1,77 @@
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+<title>Pi MQTT</title>
+
+<!-- Bootstrap core CSS -->
+<link href="bootstrap-dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Bootstrap theme -->
+<link href="bootstrap-dist/css/bootstrap-theme.min.css" rel="stylesheet">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="bootstrap-dist/js/bootstrap.min.js"></script>
+    
+<script src="js/mqtt.js"></script>
+    
+</head>
+
+<body>
+
+<!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html">Raspberry Pi</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="index.html">Home</a></li>
+            <li><a href="/">IoT Cockpit</a></li>
+            <li><a href="/">VI</a></li>
+            <li><a href="/phpmyadmin" target="_blank">PhpMyAdmin</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+<div class="container theme-showcase" role="main">
+      
+      <div class="jumbotron">
+        <h1>Raspberry Pi</h1>
+        <p>Welcome to Raspberry Pi. Trigger MQTT messages from here.</p>
+      </div>
+     
+      <div class="page-header">
+        <h2>Control your Pi 3</h2>
+
+	<div class="row">
+      	  <div class="col-md-6">
+            <button type="button" class="btn btn-lg btn-success" id="start-tracking">Start Tracking</button>
+            <button type="button" class="btn btn-lg btn-danger" id="stop-tracking">Stop Tracking</button>
+            
+            <br><br><br><br>
+            
+            <div id="debug-info">
+            </div>
+        
+          </div>
+        </div>
+        
+      </div>
+
+</div>
+
+</body>
+
+</html>
