@@ -200,7 +200,7 @@ counter = 0
 while 1 == 1:
     
     if send_data == True :
-        print('in main loop')
+        #print('in main loop')
         send_location_update()
         counter = counter + 1
         
