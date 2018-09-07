@@ -16,23 +16,28 @@ import requests
 
 ### Argument Handling ###
 parser = argparse.ArgumentParser()
-parser.add_argument("-ttl",help="Time to log",type=int,default=1)
+parser.add_argument("-output",help="Print Results or not",type=int,default=0)
 parser.add_argument("-comment",help="Comment",default="Test Logging")
 
 args = parser.parse_args()
 
-time_to_log = args.ttl
+to_print = False
+if args.output == 1 : to_print = True
+
 comment = args.comment
 fuel_level = 0;
 
+def print_text(text) :
+	if to_print : print text
+
 def get_fuel_estimation(speed) :
-	if speed <= 3 : return 1
-	elif  speed > 3 and speed <= 10 : return speed / 9
-	elif  speed > 10 and speed <= 20 : return speed / 10
-	elif  speed > 20 and speed <= 30 : return speed / 11
-	elif  speed > 30 and speed <= 40 : return speed / 12
-	elif  speed > 40 and speed <= 50 : return speed / 13
-	elif  speed > 50 and speed <= 60 : return speed / 15
+	if speed <= 5 : return 1
+	elif  speed > 5 and speed <= 10 : return speed / 8
+	elif  speed > 10 and speed <= 20 : return speed / 9
+	elif  speed > 20 and speed <= 30 : return speed / 10
+	elif  speed > 30 and speed <= 40 : return speed / 11
+	elif  speed > 40 and speed <= 50 : return speed / 12
+	elif  speed > 50 and speed <= 60 : return speed / 14
 	elif  speed > 60 : return speed / 16
 	else : return 1
 
@@ -75,7 +80,7 @@ def send_ignition_status_to_vi(igni_status) :
 	vehicle_data["GPS"] = {}
 	vehicle_data["GPS"]["coordinates"] = [gps_data.fix.longitude,gps_data.fix.latitude]
 	status_code = send_data_to_vi(vehicle_data)
-	print('Ignition Status Posted at ', time.time(), ' Status Code:' , status_code)
+	print_text("Ignition Status Posted at " + str(time.time()) + " Status Code:" + str(status_code))
 
 def send_fuel_data_to_vi() :
 	gps_data = gpsp.get_current_value()
@@ -88,7 +93,7 @@ def send_fuel_data_to_vi() :
 	vehicle_data["GPS"] = {}
 	vehicle_data["GPS"]["coordinates"] = [gps_data.fix.longitude,gps_data.fix.latitude]
 	status_code = send_data_to_vi(vehicle_data)
-	print('Fuel Data Posted at ', time.time(), ' Status Code:' , status_code)
+	print_text("Fuel Data Posted at " + str(time.time()) + " Status Code:" + str(status_code))
 
 ## Main Program ##
 
@@ -98,7 +103,7 @@ mysql_db.open_connection()
 # GPS
 gpsp = gps_poller.GpsPoller()
 gpsp.start()
-print(gpsp.get_polling_status())
+print_text(gpsp.get_polling_status())
 
 
 # do 5 times to initialize
@@ -108,7 +113,8 @@ while i<5:
     gpsp.get_current_value()
     i = i+1
 
-print("loop start")
+print_text("Loop Start")
+#print("loop start")
 i=0
 prev_time = time.time()
 
@@ -162,7 +168,7 @@ try:
         	# Set now time as previous time.
         	prev_time = time.time()
         	
-	        print('Data Posted at ', time.time(), ' Status Code:' , status_code)
+	        print_text("Data Posted at " + str(time.time()) + " Status Code:"  + str(status_code))
 
         	time.sleep(2)
 
@@ -180,7 +186,7 @@ except(KeyboardInterrupt, SystemExit):
 
 #   Stop Polling now
 	gpsp.stop_polling()
-	print(gpsp.get_polling_status())
+	print_text(gpsp.get_polling_status())
 	gpsp.join()
 
-print("program complete")
+print_text("program complete")
