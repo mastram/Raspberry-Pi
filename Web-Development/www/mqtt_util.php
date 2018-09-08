@@ -1,4 +1,5 @@
 <?php
+require_once( 'config.php' );
 
 $code = $_POST["code"];
 
@@ -27,16 +28,17 @@ if($code == "stop-tracking"){
 
 function send_command_to_device($command){
 
-	$url = 'https://1e4bcf9a-3f25-45c3-85e2-f3a486ad18f6.canary.cp.iot.sap/iot/core/api/v1/devices/10/commands';
+	$url = $iot_service_url;
+	$auth_string = $iot_service_user.":".$iot_service_password;
 
 	$fields = array(
-		'capabilityId'  => 'ea5cfc21-6e3a-4957-a314-926d1de20fd1',
-		'sensorId'	=> '17',
+		'capabilityId'  => $iot_service_cap_id,
+		'sensorId'	=> $iot_service_sensor_id,
 		'command'      	=> array( 'command' => $command )
 	);
 
 	$headers = array(
-		'Authorization: Basic ' . base64_encode("root:n0zfl5DDgimJ63O"),
+		'Authorization: Basic ' . base64_encode($auth_string),
 		'Content-Type: application/json'
 	);
 
