@@ -28,6 +28,8 @@ if($code == "stop-tracking"){
 
 function send_command_to_device($command){
 
+	global $iot_service_url, $iot_service_user, $iot_service_password;
+	global $iot_service_cap_id, $iot_service_sensor_id;
 	$url = $iot_service_url;
 	$auth_string = $iot_service_user.":".$iot_service_password;
 
@@ -41,6 +43,10 @@ function send_command_to_device($command){
 		'Authorization: Basic ' . base64_encode($auth_string),
 		'Content-Type: application/json'
 	);
+
+	//echo "111"; var_dump($url);
+	//echo "222"; var_dump($fields);
+	//echo "333"; var_dump($headers);
 
 	// Open connection
 	$ch = curl_init();
