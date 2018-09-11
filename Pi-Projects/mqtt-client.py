@@ -14,6 +14,7 @@ config_alternate_id_device='Varun_Pi01'
 cap_location_update = 'RIL_LocationUpdate'
 cap_fuel_update = 'RIL_FuelLevel'
 cap_engine_alert = 'RIL_EngineAlert'
+cap_heartbeat = 'PI_HeartBeat'
 config_alternate_id_sensor='Pi_Car'
 
 #sys.path.append('/home/pi/Pi-Projects/modules')
@@ -37,6 +38,14 @@ global prev_time
 global fuel_level
 
 # ========================================================================
+def get_ip_address(ifname):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(
+        s.fileno(),
+        0x8915, # SIOCGIFADDR
+        struct.pack('256s', ifname[:15])
+        )[20:24])
+
 def get_fuel_estimation(speed) :
 	if speed <= 5 : return 1
 	elif  speed > 5 and speed <= 10 : return speed / 8
@@ -99,6 +108,7 @@ def send_ignition_status_to_vi(igni_status) :
 	payload["capabilityAlternateId"] = cap_engine_alert
 	payload["sensorAlternateId"] = config_alternate_id_sensor
 	payload["measures"] = measures
+	result=client.publish(my_publish_topic, json.dumps(payload), qos=0)
 	
 def send_fuel_data_to_vi(fuel_data) :
 	
@@ -112,7 +122,25 @@ def send_fuel_data_to_vi(fuel_data) :
 	
 	result=client.publish(my_publish_topic, json.dumps(payload), qos=0)
 	
+def send_heartbeat(status) :
+	
+	wlan_ip = get_ip_address('wlan0')
+
+	measures = {}
+	measures["heartbeat"] = status
+	measures["message"] = "I am Alive"
+	measures["interface"] = "wlan0"
+	measures["ip"] = wlan_ip
+	
+	payload = {}
+	payload["capabilityAlternateId"] = cap_heartbeat
+	payload["sensorAlternateId"] = config_alternate_id_sensor
+	payload["measures"] = measures
+	
+	result=client.publish(my_publish_topic, json.dumps(payload), qos=0)
+
 def on_connect_broker(client, userdata, flags, rc):
+	send_heartbeat("ON")
 	print('Connected to MQTT broker with result code: ' + str(rc))
 	sys.stdout.flush()
 
