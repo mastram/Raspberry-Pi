@@ -7,7 +7,7 @@ from gps import *
 #from time import *
 import time
 import threading
- 
+
 gpsd = None #seting the global variable
  
 os.system('clear') #clear the terminal (optional)
@@ -24,6 +24,13 @@ class GpsPoller(threading.Thread):
     global gpsd
     while gpsp.running:
       gpsd.next() #this will continue to loop and grab EACH set of gpsd info to clear the buffer
+
+def count_sat(sats):
+  counter = 0
+  for sat in sats:
+    if sat.__dict__['used'] == True:
+      counter = counter + 1
+  return counter
  
 if __name__ == '__main__':
   gpsp = GpsPoller() # create the thread
@@ -38,7 +45,8 @@ if __name__ == '__main__':
       print ('')
       print (' GPS reading')
       print ('----------------------------------------')
-      print(gpsd)
+#      print(gpsd)
+      print ('GPS Status   ' , gpsd.status)
 #      print ('latitude    ' , gpsd.fix.latitude)
 #      print ('longitude   ' , gpsd.fix.longitude)
 #      print ('time utc    ' , gpsd.utc,' + ', gpsd.fix.time)
@@ -50,9 +58,12 @@ if __name__ == '__main__':
 #      print ('speed (m/s) ' , gpsd.fix.speed)
 #      print ('climb       ' , gpsd.fix.climb)
 #      print ('track       ' , gpsd.fix.track)
-#      print ('mode        ' , gpsd.fix.mode)
-      print ('')
+      print ('mode        ' , gpsd.fix.mode)
+#      print ('')
       print ('sats        ' , gpsd.satellites)
+      print ('sat count is' , count_sat(gpsd.satellites))
+#      print('heading     ' , gpsd.fix.heading)
+#      print(json.dumps(gpsd.fix.__dict__))
  
       time.sleep(2) #set to whatever
  

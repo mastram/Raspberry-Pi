@@ -9,6 +9,7 @@ from ..config import mysql_config
 ### Logging Settings ###
 
 ### Global Variables ###
+global mysql_cursor
 
 ### Functions ###
 def  open_connection() :
