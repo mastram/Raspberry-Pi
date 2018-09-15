@@ -1,5 +1,3 @@
-
-
 import sys
 import time
 import json
@@ -9,7 +7,6 @@ import fcntl
 import struct
 import datetime
 
-#from sense_hat import SenseHat
 from modules.config import vi
 from modules.gps_poller import gps_poller
 from modules.database  import mysql_db
@@ -22,22 +19,19 @@ cap_engine_alert = 'RIL_EngineAlert'
 cap_heartbeat = 'PI_HeartBeat'
 config_alternate_id_sensor='Pi_Car'
 
-#sys.path.append('/home/pi/Pi-Projects/modules')
-#from database  import mysql_db
-
 # as an additional / non standard module pre-condition: 
 # install Paho MQTT lib e.g. from https://github.com/eclipse/paho.mqtt.python
 import paho.mqtt.client as mqtt
 
 # Global Variables
-#sense = SenseHat()
 
 # GPS
 gpsp = gps_poller.GpsPoller()
 gpsp.start()
 
 global send_data
-send_data = False
+# By default start sending
+send_data = True
 
 global prev_time
 global fuel_level
@@ -77,16 +71,27 @@ def update_fuel_value(fuel_value) :
 	mysql_cur.execute(query, value_set)
 	mysql_db.commit_data()
 
+def get_sattelite_count(sats):
+    sat_counter = 0
+    for sat in sats:
+        if sat.__dict__['used'] == True:
+            sat_counter = sat_counter + 1
+    return sat_counter
 
 def send_location_update():
         global fuel_level
         global prev_time
         gps_data = gpsp.get_current_value()
 	now = time.time()
+	sat_count = get_sattelite_count(gps_data.satellites)
+	
+	if sat_count < 4:
+            return
 	
 	measures = {}
 	measures["lat"] = gps_data.fix.latitude
 	measures["lgt"] = gps_data.fix.longitude
+	measures["nos"] = sat_count
 	measures["spd"] = gps_data.fix.speed * 3.6	#mps to kmph
 	
 	lph = get_fuel_estimation(measures["spd"])		#Get Fuel consumption in lph
@@ -127,13 +132,13 @@ def send_fuel_data_to_vi(fuel_data) :
 	
 	result=client.publish(my_publish_topic, json.dumps(payload), qos=0)
 	
-def send_heartbeat(status) :
+def send_heartbeat(status,message) :
 	
 	wlan_ip = get_ip_address('wlan0')
 
 	measures = {}
 	measures["heartbeat"] = status
-	measures["message"] = "I am Alive"
+	measures["message"] = message
 	measures["interface"] = "wlan0"
 	measures["ip"] = wlan_ip
 	
@@ -145,19 +150,29 @@ def send_heartbeat(status) :
 	result=client.publish(my_publish_topic, json.dumps(payload), qos=0)
 
 def on_connect_broker(client, userdata, flags, rc):
-	send_heartbeat("ON")
-	print('----------------------  ' + str(datetime.datetime.now()) + '  ---------------------')
-	print('Connected to MQTT broker with result code: ' + str(rc))
+	send_heartbeat("ON","I just woke up")
 	sys.stdout.flush()
 
 def on_subscribe(client, obj, message_id, granted_qos):
 	print('on_subscribe - message_id: ' + str(message_id) + ' / qos: ' + str(granted_qos))
 	sys.stdout.flush()
 
+def send_start_packet():
+    global prev_time
+    global fuel_level
+    prev_time = time.time()
+    fuel_level = get_current_fuel_value()
+    send_ignition_status_to_vi("On")
+    send_fuel_data_to_vi(fuel_level)
+    
+def send_stop_packet():
+    global fuel_level
+    send_fuel_data_to_vi(fuel_level)
+    send_ignition_status_to_vi("Off")
+    update_fuel_value(fuel_level)
+
 def on_message(client, obj, msg):
         global send_data
-        global fuel_level
-        global prev_time
         
 	payload = json.loads(msg.payload)
 	command = payload["command"]["command"]
@@ -165,22 +180,16 @@ def on_message(client, obj, msg):
 	sys.stdout.flush()
 	
 	if command == 'Start':
-            prev_time = time.time()
-            fuel_level = get_current_fuel_value()
-            send_ignition_status_to_vi("On")
-            send_fuel_data_to_vi(fuel_level)
+            send_start_packet()
             send_data = True
             
         elif command == 'Stop':
-            send_fuel_data_to_vi(fuel_level)
-            send_ignition_status_to_vi("Off")
-            update_fuel_value(fuel_level)
+            send_stop_packet()
             send_data = False
             
         else:
 	    print(command)
-            #send_location_update()
-            #sense.show_message(command,scroll_speed = 0.10)
+            send_heartbeat("ON", command)
    
 # ========================================================================
 
@@ -216,6 +225,7 @@ while not_connected:
 		time.sleep(5)
 # } while
 
+print('----------------------  ' + str(datetime.datetime.now()) + '  ---------------------')
 print("connected to broker now")
 sys.stdout.flush()
 
@@ -230,11 +240,20 @@ client.loop_start()
 mysql_db.open_connection()
 
 counter = 0
+gps_connected = False
+
+while gps_connected == False:
+    gps_data = gpsp.get_current_value()
+    sat_count = get_sattelite_count(gps_data.satellites)
+    
+    if sat_count > 3:
+        gps_connected = True
+        send_start_packet()
 
 while 1 == 1:
     
     if send_data == True :
-        #print('in main loop')
+        
         send_location_update()
         counter = counter + 1
         
