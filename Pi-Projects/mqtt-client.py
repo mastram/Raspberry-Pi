@@ -1,10 +1,15 @@
+
+
 import sys
 import time
-
 import json
 import requests
+import socket
+import fcntl
+import struct
+import datetime
 
-from sense_hat import SenseHat
+#from sense_hat import SenseHat
 from modules.config import vi
 from modules.gps_poller import gps_poller
 from modules.database  import mysql_db
@@ -25,7 +30,7 @@ config_alternate_id_sensor='Pi_Car'
 import paho.mqtt.client as mqtt
 
 # Global Variables
-sense = SenseHat()
+#sense = SenseHat()
 
 # GPS
 gpsp = gps_poller.GpsPoller()
@@ -141,6 +146,7 @@ def send_heartbeat(status) :
 
 def on_connect_broker(client, userdata, flags, rc):
 	send_heartbeat("ON")
+	print('----------------------  ' + str(datetime.datetime.now()) + '  ---------------------')
 	print('Connected to MQTT broker with result code: ' + str(rc))
 	sys.stdout.flush()
 
