@@ -5,7 +5,6 @@ import requests
 import socket
 import fcntl
 import struct
-import datetime
 
 from modules.config import vi
 from modules.gps_poller import gps_poller
@@ -79,14 +78,14 @@ def get_sattelite_count(sats):
     return sat_counter
 
 def send_location_update():
-        global fuel_level
-        global prev_time
-        gps_data = gpsp.get_current_value()
-	now = time.time()
+	global fuel_level
+    global prev_time
+    gps_data = gpsp.get_current_value()
+	now = gpsd.fix.time
 	sat_count = get_sattelite_count(gps_data.satellites)
 	
 	if sat_count < 4:
-            return
+		return
 	
 	measures = {}
 	measures["lat"] = gps_data.fix.latitude
@@ -160,7 +159,8 @@ def on_subscribe(client, obj, message_id, granted_qos):
 def send_start_packet():
     global prev_time
     global fuel_level
-    prev_time = time.time()
+    gps_data = gpsp.get_current_value()
+    prev_time = gpsd.fix.time
     fuel_level = get_current_fuel_value()
     send_ignition_status_to_vi("On")
     send_fuel_data_to_vi(fuel_level)
@@ -225,7 +225,7 @@ while not_connected:
 		time.sleep(5)
 # } while
 
-print('----------------------  ' + str(datetime.datetime.now()) + '  ---------------------')
+print('+++++++++++++++++++++++++++++++++++++++++++++++++')
 print("connected to broker now")
 sys.stdout.flush()
 
@@ -249,6 +249,8 @@ while gps_connected == False:
     if sat_count > 3:
         gps_connected = True
         send_start_packet()
+
+print('Time is : ' + gpsd.utc + ' UTC')
 
 while 1 == 1:
     

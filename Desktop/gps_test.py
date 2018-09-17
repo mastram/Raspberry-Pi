@@ -49,7 +49,7 @@ if __name__ == '__main__':
       print ('GPS Status   ' , gpsd.status)
 #      print ('latitude    ' , gpsd.fix.latitude)
 #      print ('longitude   ' , gpsd.fix.longitude)
-#      print ('time utc    ' , gpsd.utc,' + ', gpsd.fix.time)
+      print ('time utc    ' , gpsd.utc,' + ', gpsd.fix.time)
 #      print ('altitude (m)' , gpsd.fix.altitude)
 #      print ('eps         ' , gpsd.fix.eps)
 #      print ('epx         ' , gpsd.fix.epx)
