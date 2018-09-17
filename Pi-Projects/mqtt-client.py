@@ -79,8 +79,8 @@ def get_sattelite_count(sats):
 
 def send_location_update():
 	global fuel_level
-    global prev_time
-    gps_data = gpsp.get_current_value()
+	global prev_time
+	gps_data = gpsp.get_current_value()
 	now = gpsd.fix.time
 	sat_count = get_sattelite_count(gps_data.satellites)
 	
