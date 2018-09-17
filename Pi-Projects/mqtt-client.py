@@ -6,6 +6,7 @@ import socket
 import fcntl
 import struct
 
+from datetime import datetime
 from modules.config import vi
 from modules.gps_poller import gps_poller
 from modules.database  import mysql_db
@@ -81,7 +82,8 @@ def send_location_update():
 	global fuel_level
 	global prev_time
 	gps_data = gpsp.get_current_value()
-	now = gpsd.fix.time
+	#now = datetime.fromtimestamp(gps_data.fix.time)
+	now = datetime.strptime(gps_data.utc,'%Y-%m-%dT%H:%M:%S.%fZ')
 	sat_count = get_sattelite_count(gps_data.satellites)
 	
 	if sat_count < 4:
@@ -94,7 +96,8 @@ def send_location_update():
 	measures["spd"] = gps_data.fix.speed * 3.6	#mps to kmph
 	
 	lph = get_fuel_estimation(measures["spd"])		#Get Fuel consumption in lph
-	fuel_consumed = lph * (now - prev_time) / 3600
+	time_diff = now - prev_time
+	fuel_consumed = lph * time_diff.total_seconds() / 3600
 	fuel_level = fuel_level - fuel_consumed
 	
 	payload = {}
@@ -160,7 +163,8 @@ def send_start_packet():
     global prev_time
     global fuel_level
     gps_data = gpsp.get_current_value()
-    prev_time = gpsd.fix.time
+    #prev_time = datetime.fromtimestamp(gps_data.fix.time)
+    prev_time = datetime.strptime(gps_data.utc,'%Y-%m-%dT%H:%M:%S.%fZ')
     fuel_level = get_current_fuel_value()
     send_ignition_status_to_vi("On")
     send_fuel_data_to_vi(fuel_level)
@@ -241,6 +245,7 @@ mysql_db.open_connection()
 
 counter = 0
 gps_connected = False
+gps_data = gpsp.get_current_value()
 
 while gps_connected == False:
     gps_data = gpsp.get_current_value()
@@ -250,7 +255,7 @@ while gps_connected == False:
         gps_connected = True
         send_start_packet()
 
-print('Time is : ' + gpsd.utc + ' UTC')
+print('Time is : ' + gps_data.utc + ' UTC')
 
 while 1 == 1:
     

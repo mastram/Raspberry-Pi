@@ -63,7 +63,8 @@ if __name__ == '__main__':
       print ('sats        ' , gpsd.satellites)
       print ('sat count is' , count_sat(gpsd.satellites))
 #      print('heading     ' , gpsd.fix.heading)
-#      print(json.dumps(gpsd.fix.__dict__))
+      print(json.dumps(gpsd.fix.__dict__))
+      print(type(gpsd.fix.time))
  
       time.sleep(2) #set to whatever
  
