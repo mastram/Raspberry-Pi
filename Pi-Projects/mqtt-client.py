@@ -35,6 +35,8 @@ send_data = True
 
 global prev_time
 global fuel_level
+global sleep_time
+global min_gps_sat_count
 
 # ========================================================================
 def get_ip_address(ifname):
@@ -53,7 +55,8 @@ def get_fuel_estimation(speed) :
 	elif  speed > 30 and speed <= 40 : return speed / 11
 	elif  speed > 40 and speed <= 50 : return speed / 12
 	elif  speed > 50 and speed <= 60 : return speed / 14
-	elif  speed > 60 : return speed / 16
+	elif  speed > 60 and speed <= 100 : return speed / 16
+	elif  speed > 100 : return speed / 15
 	else : return 1
 
 def get_current_fuel_value() :
@@ -81,12 +84,14 @@ def get_sattelite_count(sats):
 def send_location_update():
 	global fuel_level
 	global prev_time
+	global sleep_time
+	global min_gps_sat_count
 	gps_data = gpsp.get_current_value()
 	#now = datetime.fromtimestamp(gps_data.fix.time)
 	now = datetime.strptime(gps_data.utc,'%Y-%m-%dT%H:%M:%S.%fZ')
 	sat_count = get_sattelite_count(gps_data.satellites)
 	
-	if sat_count < 4:
+	if sat_count < min_gps_sat_count:
 		return
 	
 	measures = {}
@@ -94,7 +99,12 @@ def send_location_update():
 	measures["lgt"] = gps_data.fix.longitude
 	measures["nos"] = sat_count
 	measures["spd"] = gps_data.fix.speed * 3.6	#mps to kmph
-	
+
+	if measures["spd"] > 30:
+		sleep_time = 15
+	else:
+		sleep_time = 10
+
 	lph = get_fuel_estimation(measures["spd"])		#Get Fuel consumption in lph
 	time_diff = now - prev_time
 	fuel_consumed = lph * time_diff.total_seconds() / 3600
@@ -186,14 +196,14 @@ def on_message(client, obj, msg):
 	if command == 'Start':
             send_start_packet()
             send_data = True
-            
+
         elif command == 'Stop':
             send_stop_packet()
             send_data = False
             
         else:
-	    print(command)
-            send_heartbeat("ON", command)
+        	print(command)
+        	send_heartbeat("ON", command)
    
 # ========================================================================
 
@@ -205,6 +215,10 @@ config_credentials_crt='/home/pi/Pi-Projects/credentials.crt'
 
 broker=config_broker
 broker_port=8883
+
+# Default values
+min_gps_sat_count = 5
+sleep_time = 10
 
 # Add delay of 10 seconds
 #time.sleep(1)
@@ -251,7 +265,7 @@ while gps_connected == False:
     gps_data = gpsp.get_current_value()
     sat_count = get_sattelite_count(gps_data.satellites)
     
-    if sat_count > 3:
+    if sat_count > min_gps_sat_count:
         gps_connected = True
         send_start_packet()
 
@@ -268,5 +282,5 @@ while 1 == 1:
             update_fuel_value(fuel_level)
             send_fuel_data_to_vi(fuel_level)
         
-	time.sleep(3)
+	time.sleep(sleep_time)
         
