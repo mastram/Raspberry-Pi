@@ -4,6 +4,7 @@
 ## To auto start GPSD Demon
 
 Default settings for the gpsd init script and the hotplug wrapper.
+This is done in the file : /etc/default/gpsd
 
 Start the gpsd daemon automatically at boot time
 `START_DAEMON="true"`
