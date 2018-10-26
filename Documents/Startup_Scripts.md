@@ -1,6 +1,6 @@
-#Startup Scripts
+# Startup Scripts
 
-##Print IP
+## Print IP
 Print IP if the Sense hat is connected
 _IP=$(hostname -I) || true
 if [ "$_IP" ]; then
