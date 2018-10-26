@@ -19,3 +19,7 @@ Then restart apache service
 Change the root directoty of the Web in 2 places:
 1. in /etc/apache2/sites-available
 2. in /etc/apache2/apache.conf
+
+#### Reconfigure PhpMyAdmin
+Some times its required to reconfigure the php my admin
+`sudo dpkg-reconfigure phpmyadmin`
