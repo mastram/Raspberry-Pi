@@ -16,3 +16,6 @@ Then restart apache service
 `sudo service apache2 restart`
 
 #### Change root directory of Web
+Change the root directoty of the Web in 2 places:
+1. in /etc/apache2/sites-available
+2. in /etc/apache2/apache.conf
