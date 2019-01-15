@@ -3,6 +3,10 @@ from sense_hat import SenseHat
 from datetime import datetime
 import time
 
+def getSenseHatData():
+	sense = SenseHat()
+	return sense
+	
 def get_sense_data():
 
     sense = SenseHat()
