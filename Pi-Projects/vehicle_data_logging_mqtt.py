@@ -210,8 +210,8 @@ def on_message(client, obj, msg):
 # === main starts here ===================================================
 
 config_crt_4_landscape='/home/pi/Pi-Projects/eu10cpiotsap.crt'
-config_credentials_key='/home/pi/Pi-Projects/credentials.key'
-config_credentials_crt='/home/pi/Pi-Projects/credentials.crt'
+config_credentials_key='/home/pi/Pi-Projects/cert/Varun_Pi01/credentials.key'
+config_credentials_crt='/home/pi/Pi-Projects/cert/Varun_Pi01/credentials.crt'
 
 broker=config_broker
 broker_port=8883

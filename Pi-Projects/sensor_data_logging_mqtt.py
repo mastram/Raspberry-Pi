@@ -29,6 +29,19 @@ import paho.mqtt.client as mqtt
 
 # ============== Function List Starts Here ==========================
 
+def on_connect_broker(client, userdata, flags, rc):
+	print("Inside on connect method")
+	sys.stdout.flush()
+
+def on_subscribe(client, obj, message_id, granted_qos):
+	print('on_subscribe - message_id: ' + str(message_id) + ' / qos: ' + str(granted_qos))
+	sys.stdout.flush()
+
+def on_message(client, obj, msg):
+	payload = json.loads(msg.payload)
+	print(payload)
+	sys.stdout.flush()
+
 ## Send data to PdMS
 def send_data_to_pdms():
 
@@ -36,7 +49,7 @@ def send_data_to_pdms():
 
 	## Publish Accelerometer Data
 	# Get accelerometer values
-    x,y,z = sensor_readings.get_accelerometer_raw().values()
+    	x,y,z = sensor_readings.get_accelerometer_raw().values()
 
 	measures = {}
 	measures["I_ForceX"] = x
@@ -52,9 +65,6 @@ def send_data_to_pdms():
 
 
 	## Publish Weather Data
-	# Get accelerometer values
-    x,y,z = sensor_readings.get_accelerometer_raw().values()
-
 	measures = {}
 	measures["I_Temperature"] = sensor_readings.get_temperature_from_humidity()
 	measures["I_Pressure"] = sensor_readings.get_pressure()
@@ -77,7 +87,7 @@ commit_frequency = 50
 
 ### Argument Handling ###
 parser = argparse.ArgumentParser()
-parser.add_argument("-ttl",help="Time to log",type=int,default=15)
+parser.add_argument("-ttl",help="Time to log",type=int,default=180)
 parser.add_argument("-comment",help="Comment",default="Test Logging")
 
 args = parser.parse_args()
@@ -87,8 +97,8 @@ comment = args.comment
 
 # Keys
 config_crt_4_landscape='/home/pi/Pi-Projects/eu10cpiotsap.crt'
-config_credentials_key='/home/pi/Pi-Projects/credentials.key'
-config_credentials_crt='/home/pi/Pi-Projects/credentials.crt'
+config_credentials_key='/home/pi/Pi-Projects/cert/VarunVerma-Pi/credentials.key'
+config_credentials_crt='/home/pi/Pi-Projects/cert/VarunVerma-Pi/credentials.crt'
 
 broker=config_broker
 broker_port=8883
@@ -132,6 +142,8 @@ while i<5:
 # Reset counter
 i = 0
 
+client.loop_start()
+
 print("loop start")
 start_time = time.time()
 now = time.time()
@@ -139,10 +151,10 @@ now = time.time()
 while now < start_time + time_to_log:
 
 	send_data_to_pdms()
-    now = time.time()
+	now = time.time()
 
-    # Sleep for 3 seconds and send again.
-    time.sleep(3)
+	# Sleep for 3 seconds and send again.
+	time.sleep(3)
 
 
 print("program complete")
