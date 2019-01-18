@@ -14,3 +14,5 @@ Things to do when setting up a new Pi
 4. [Set up GPS Libraries](https://github.com/mastram/Raspberry-Pi/blob/master/Documents/GPS-Setup.md)
 
 5. Set up Paho Clients
+
+6. Run start up scripts. These are defined in : /etc/rc.local
